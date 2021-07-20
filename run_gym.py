@@ -1,4 +1,5 @@
-from actor_critic_gru import ActorCriticGRU, PlasticActorCritic
+from PlasticGRUCell import PlasticGRUCell
+from actor_critic_gru import ActorCriticGRU, ActorCritic
 import gym
 import collections
 import statistics
@@ -7,7 +8,7 @@ import jax
 import jax.numpy as jnp
 from typing import List, Tuple, Callable
 from functools import partial
-from visualize import render_episode
+#from visualize import render_episode
 import tqdm
 import flax
 from flax.training.checkpoints import save_checkpoint, restore_checkpoint
@@ -51,12 +52,12 @@ def false_fun(stat_ret):
 eps = 1e-8
 def increment_stats(stats, returns: jnp.ndarray):
 	n, average, s = stats
-	print(f'n {n}, avg {average}, s {s}')
+	#print(f'n {n}, avg {average}, s {s}')
 	stats = jax.lax.cond(stats[0] == 0,
 				 lambda _: (len(returns)+0.0, returns.mean(), returns.std()),
 				 false_fun,
 				 (stats, returns))
-	print(stats)
+	#print(stats)
 	return stats 
 
 def get_expected_returns(rewards: jnp.ndarray, stats, gamma: float) -> Tuple:
@@ -66,8 +67,10 @@ def get_expected_returns(rewards: jnp.ndarray, stats, gamma: float) -> Tuple:
 		total = r + gamma * total
 		returns.insert(0, total)
 	returns = jnp.array(returns)
-	stats = increment_stats(stats, returns)
-	_, average, s = stats
+	#stats = increment_stats(stats, returns)
+	#_, average, s = stats
+	average = returns.mean()
+	s = returns.std()
 	#print(f'Average {average}, std {s}')
 	returns = (returns - average) / s
 	return stats, returns
@@ -134,7 +137,7 @@ episodes_reward = collections.deque(maxlen=min_episode_criterion)
 rng = jax.random.PRNGKey(98242)
 
 hid_dim = 16
-model = PlasticActorCritic(hid_dim, 3)
+model = ActorCritic(hid_dim, 3, PlasticGRUCell)
 rng, key = jax.random.split(rng)
 x = jnp.zeros((1,2))
 carry = model.initialize_carry(key)

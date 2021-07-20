@@ -1,7 +1,8 @@
+from flax.linen.recurrent import GRUCell
 import jax
 import jax.numpy as jnp
 from flax import linen as nn
-from PlasticGRUCell import PlasticGRUCell
+from typing import Type
 
 class ActorCriticGRU(nn.Module):
 	hid_dim: int
@@ -25,22 +26,24 @@ class ActorCriticGRU(nn.Module):
 		h = nn.GRUCell.initialize_carry(rng, (), self.hid_dim)
 		return rng, h
 
-class PlasticActorCritic(nn.Module):
+class ActorCritic(nn.Module):
 	hid_dim: int
 	out_dim: int
+	cell: Type[GRUCell]
 
 	@nn.compact
 	def __call__(self, carry, inputs):
-		rng, h, hebb = carry
-		plastic_gru = nn.scan(PlasticGRUCell,
-								variable_broadcast='params',
-								split_rngs={'params': False})()
-		(final_h, final_hebb), y = plastic_gru((h, hebb), inputs)
+		rng, *state = carry
+		state = tuple(state)
+		rnn = nn.scan(self.cell,
+						variable_broadcast='params',
+						split_rngs={'params': False})()
+		final_state, y = rnn(state, inputs)
 		output = nn.Dense(features=self.out_dim)(y)
 		rng, act_rng = jax.random.split(rng)
 		action = jax.random.categorical(act_rng, output[:,:2])
-		return (rng, final_h, final_hebb), (output, action)
+		return (rng, *final_state), (output, action)
 	
 	def initialize_carry(self, rng):
-		h, hebb = PlasticGRUCell.initialize_carry(rng, (), self.hid_dim)
-		return rng, h, hebb
+		state = self.cell.initialize_carry(rng, (), self.hid_dim)
+		return rng, *state
