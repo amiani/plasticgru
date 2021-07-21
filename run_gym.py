@@ -1,4 +1,4 @@
-from PlasticGRUCell import PlasticGRUCell
+from cells import PlasticGRUCell
 from actor_critic_gru import ActorCriticGRU, ActorCritic
 import gym
 import collections

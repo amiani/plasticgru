@@ -2,8 +2,8 @@ from flax import linen as nn
 from typing import Type
 
 class RNN(nn.Module):
-	out_dim: int
 	cell: Type[nn.GRUCell]
+	out_dim: int
 
 	@nn.compact
 	def __call__(self, carry, inputs):
