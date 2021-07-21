@@ -222,7 +222,7 @@ class PlasticBistableCell(GRUCell):
     """
     h, hebb = carry
 
-    hidden_features = h.shape[-1]
+    batch_size, hidden_features = h.shape
     # input and recurrent layers are summed so only one needs a bias.
     dense_h = partial(nn.Dense,
                       features=hidden_features,
@@ -246,7 +246,7 @@ class PlasticBistableCell(GRUCell):
                           (hidden_features,))
     plasticity = self.param('plasticity',
                             nn.initializers.normal(0.01),
-                            (h.shape[0],h.shape[0]))
+                            (batch_size,hidden_features,hidden_features))
     hdotkernel = jnp.einsum('ni,nij->nj', h, hn_kernel + plasticity * hebb)
     reset_h = r * (hdotkernel + hn_bias)
     n = self.activation_fn(dense_i(name='in')(inputs) + reset_h)
@@ -272,5 +272,5 @@ class PlasticBistableCell(GRUCell):
     """
     mem_shape = batch_dims + (size,)
     h = init_fn(rng, mem_shape)
-    hebb = nn.initializers.zeros(rng, (size,size))
+    hebb = nn.initializers.zeros(rng, batch_dims + (size,size))
     return h, hebb
