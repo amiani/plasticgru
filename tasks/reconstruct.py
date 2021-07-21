@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import jax.numpy as jnp
 import numpy as np
 from typing import Tuple
-from task import Task
+from tasks.task import Task
 
 @dataclass
 class ReconstructTask(Task):
@@ -32,10 +32,12 @@ class ReconstructTask(Task):
                 for j in range(self.num_patterns):
                     pattern = patterns[j]
                     for a in range(self.pres_time):
-                        t = (self.pres_time+self.pres_delay)*self.num_pres_cycles*i + (self.pres_time+pres_delay)*j + a
+                        t = (self.pres_time+self.pres_delay)*self.num_pres_cycles*i \
+                            + (self.pres_time+self.pres_delay)*j + a
                         data[n,t,:] = pattern
                     for a in range(self.pres_delay):
-                        t = (self.pres_time+self.pres_delay)*self.num_pres_cycles*i + (self.pres_time+pres_delay)*j + a + pres_time
+                        t = (self.pres_time+self.pres_delay)*self.num_pres_cycles*i \
+                            + (self.pres_time+self.pres_delay)*j + a + self.pres_time
                         data[n,t,:] = np.zeros(self.input_dim)
             targets[n,:] = rng.choice(patterns)
             mask = np.random.choice(self.input_dim, (int(self.input_dim/2),), False)
@@ -45,3 +47,9 @@ class ReconstructTask(Task):
             data[n,-2,:] = masked_pattern
             data[n,-3,:] = masked_pattern
         return jnp.array(data), jnp.array(targets)
+
+    def get_zeros(self, batch_size: int) -> jnp.ndarray:
+        return jnp.zeros((
+            batch_size,
+            ((self.pres_time + self.pres_delay) * self.num_patterns) * self.num_pres_cycles + 3,
+            self.input_dim))

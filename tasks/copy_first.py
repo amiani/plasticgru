@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import jax
 import jax.numpy as jnp
-from task import Task
+from tasks.task import Task
 from typing import Tuple
 
 @dataclass
