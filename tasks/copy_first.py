@@ -1,17 +1,22 @@
+from dataclasses import dataclass
 import jax
 import jax.numpy as jnp
-from typing import Dict
+from task import Task
+from typing import Tuple
 
-def generate_copy_first_batch(rng: jnp.ndarray, config: Dict) -> jnp.ndarray:
-	batch_size = config["batch_size"]
-	series_length = config["series_length"]
-	input_dim = config["input_dim"]
-	return jax.random.normal(rng, (batch_size, series_length, input_dim))
+@dataclass
+class CopyFirstTask(Task):
+	series_length: int
+	input_dim: int
 
-copy_first_config = {
-	'name': 'copy first',
-	'generate_batch': generate_copy_first_batch,
-	'batch_size': 128,
-	'series_length': 300,
-	'input_dim': 128,
-}
+	def generate_batch(
+		self,
+		rng: jnp.ndarray,
+		batch_size: int) -> Tuple[jnp.ndarray, jnp.ndarray]:
+
+		inputs = jax.random.normal(rng, (batch_size, self.series_length, self.input_dim))
+		targets = inputs[:,0,:]
+		return inputs, targets
+	
+	def get_zeros(self, batch_size: int) -> jnp.ndarray:
+		return jnp.zeros((batch_size, self.series_length, self.input_dim))
