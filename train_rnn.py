@@ -5,9 +5,10 @@ from cells import BistableCell, PlasticBistableCell, PlasticGRUCell
 from RNN import RNN
 import jax
 import jax.numpy as jnp
-import tqdm
+from flax import linen as nn
 import optax
 from typing import Tuple
+import tqdm
 
 rng = jax.random.PRNGKey(0)
 tx = optax.adam(learning_rate=1e-3)
@@ -70,14 +71,16 @@ def test(
 	return mse_loss(params, carry, inputs, targets)
 
 
-batch_size = 128
-input_dim = 128
-hid_dim = 128
-model = RNN(BistableCell, input_dim)
+batch_size = 4
+input_dim = 1024
+hid_dim = 1024
+model = RNN(PlasticGRUCell, input_dim)
+copy_first = CopyFirstTask(300, input_dim)
+reconstruct = ReconstructTask(input_dim, 3, 3, 3, 3)
 num_epochs = 50
 num_iterations = int(40000*num_epochs/batch_size)
-#copy_first = CopyFirstTask(300, input_dim)
-reconstruct = ReconstructTask(input_dim ,3, 3, 3, 3)
-params = train(rng, reconstruct, batch_size, hid_dim, num_iterations)
-test_loss = test(rng, reconstruct, params, 10000, hid_dim)
+
+task = reconstruct
+params = train(rng, task, batch_size, hid_dim, num_iterations)
+test_loss = test(rng, task, params, 10000, hid_dim)
 print(f'Test loss: {test_loss}')
