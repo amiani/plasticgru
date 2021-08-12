@@ -70,7 +70,7 @@ class PlasticGRUCell(GRUCell):
                           (hidden_features,))
     plasticity = self.param('plasticity',
                             nn.initializers.normal(0.01),
-                            (batch_size, hidden_features, hidden_features))
+                            (hidden_features, hidden_features))
     #hdotkernel = jax.lax.dot_general(h, hn_kernel + plasticity * hebb,
                                 #(((h.ndim - 1,), (1,2)), ((0,), (0,))))
     hdotkernel = jnp.einsum('ni,nij->nj', h, hn_kernel + plasticity * hebb)
@@ -114,6 +114,7 @@ class BistableCell(GRUCell):
       the hidden state (default: orthogonal).
     bias_init: initializer for the bias parameters (default: zeros)
   """
+
   gate_fn: Callable[..., Any] = nn.activation.sigmoid
   activation_fn: Callable[..., Any] = nn.activation.tanh
   kernel_init: Callable[[PRNGKey, Shape, Dtype], Array] = (
@@ -246,7 +247,7 @@ class PlasticBistableCell(GRUCell):
                           (hidden_features,))
     plasticity = self.param('plasticity',
                             nn.initializers.normal(0.01),
-                            (batch_size,hidden_features,hidden_features))
+                            (hidden_features,hidden_features))
     hdotkernel = jnp.einsum('ni,nij->nj', h, hn_kernel + plasticity * hebb)
     reset_h = r * (hdotkernel + hn_bias)
     n = self.activation_fn(dense_i(name='in')(inputs) + reset_h)

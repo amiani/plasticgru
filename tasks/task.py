@@ -4,6 +4,8 @@ from typing import Tuple
 
 @dataclass
 class Task:
+	name = "task"
+
 	def generate_batch(
 		self,
 		rng: jnp.ndarray,

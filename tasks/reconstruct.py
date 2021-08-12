@@ -12,6 +12,8 @@ class ReconstructTask(Task):
     num_patterns: int
     num_pres_cycles: int
 
+    name = "reconstruct"
+
     def generate_batch(
         self,
         _: jnp.ndarray,

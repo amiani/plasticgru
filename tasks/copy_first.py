@@ -8,6 +8,11 @@ from typing import Tuple
 class CopyFirstTask(Task):
 	series_length: int
 	input_dim: int
+	
+	def __init__(self, series_length, input_dim):
+		self.series_length = series_length
+		self.input_dim = input_dim
+		self.name = f'copyfirst_{self.series_length}'
 
 	def generate_batch(
 		self,
