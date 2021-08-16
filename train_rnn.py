@@ -3,7 +3,7 @@ from flax.core.frozen_dict import FrozenDict
 from tasks.reconstruct import ReconstructTask
 from tasks.copy_first import CopyFirstTask
 from tasks.task import Task
-from cells import BistableCell, PlasticBistableCell, PlasticGRUCell
+from cells import BistableCell, PlasticBistableCell, PlasticGRUCell, PlasticBistableCell2
 from RNN import RNN
 import jax
 import jax.numpy as jnp
@@ -98,9 +98,9 @@ def run_experiment(
 	save_training_stats(training_stats, test_loss, f'{cell.__name__}_{task.name}_{input_dim}_{hid_dim}')
 
 batch_size = 128
-input_dim = 32
-hid_dim = 32
-num_epochs = 64
+input_dim = 1
+hid_dim = 8
+num_epochs = 50
 cell = PlasticBistableCell
 model = RNN(cell, input_dim)
 copy_first = CopyFirstTask(300, input_dim)
