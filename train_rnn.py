@@ -44,6 +44,9 @@ def train(
 			training_stats[0].append(epoch*batch_size)
 			training_stats[1].append(loss)
 
+			if loss < 0.005:
+				break
+
 			t.set_description(f'Epoch {epoch}')
 			t.set_postfix(loss=loss)
 	
@@ -98,19 +101,20 @@ def run_experiment(
 	save_training_stats(training_stats, test_loss, f'{cell.__name__}_{task.name}_{input_dim}_{hid_dim}')
 
 batch_size = 128
-input_dim = 1
-hid_dim = 8
+input_dim = 32
+hid_dim = 48
 num_epochs = 50
-cell = PlasticBistableCell
-model = RNN(cell, input_dim)
+cells = [BistableCell]
 copy_first = CopyFirstTask(300, input_dim)
 reconstruct = ReconstructTask(input_dim, 3, 3, 3, 3)
 
-run_experiment(
-	cell,
-	copy_first,
-	batch_size,
-	input_dim,
-	hid_dim,
-	num_epochs
-)
+for cell in cells:
+	model = RNN(cell, input_dim)
+	run_experiment(
+		cell,
+		copy_first,
+		batch_size,
+		input_dim,
+		hid_dim,
+		num_epochs
+	)
